@@ -1,0 +1,157 @@
+pipeline:
+  type: Ingest
+
+  location_id: morro
+  dataset_name: buoy_z06
+  qualifier: lidar
+  temporal: 10min
+  data_level: a1
+
+dataset_definition:
+  attributes:
+    title: Example Ingest for a2e Lidar Data
+    description: Example ingest of lidar data from a buoy stationed at Morro Bay, California.
+    conventions: "ME Data Pipeline Standards: Version 1.0"
+    institution: Pacific Northwest National Laboratory
+    code_url: https://github.com/tsdat/ingest-template-local
+    location_meaning: Morro Bay
+
+  dimensions:
+    time:
+        length: unlimited
+    height:
+        length: 12
+
+  variables:
+
+    time:
+      input:
+        name: Timestamp (end of interval)
+        converter:
+          classname: tsdat.utils.converters.StringTimeConverter
+          parameters:
+            timezone: UTC
+            time_format: "%Y/%m/%d %H:%M"
+      dims: [time]
+      type: long
+      attrs:
+        long_name: Time (UTC)
+        standard_name: time
+        units: seconds since 1970-01-01T00:00:00
+
+    height:
+      data: [40, 60, 80, 90, 100, 120, 140, 160, 180, 200, 220, 240]
+      dims: [height]
+      type: int
+      attrs:
+        long_name: Height ASL
+        units: m
+
+    wind_speed:
+      dims: [time, height]
+      type: float
+      attrs:
+        long_name: Wind Speed
+        description: "Wind speed is the measurement of how fast wind is moving past a 
+        fixed location in the horizontal plane. The lidar wind profiler, which is 
+        mounted on the buoy hull, measures wind speed at heights between 40 m to 250 
+        meters above the sea surface by detecting the reflection of laser signals sent 
+        into the atmosphere."
+        standard_name: wind_speed
+        units: m/s
+
+    wind_direction:
+      dims: [time, height]
+      type: float
+      attrs:
+        long_name: Wind Direction
+        description: "Wind speed direction is the direction from which the wind is 
+        originating. Wind direction is measured at multiple heights between 40 to 250 
+        meters above the sea surface using the lidar wind profiler mounted on the buoy."
+        comment: "Wind direction is measured such that 0 deg is wind blowing from north
+        to south, 90 deg is wind blowing west to east, etc."
+        standard_name: wind_from_direction
+        units: degrees
+
+    data_availability:
+      dims: [time, height]
+      type: float
+      attrs:
+        long_name: Availability
+        description: "Data availability is the ratio of measurements recorded against the 
+        number of measurements that were expected over the same interval. For example, 
+        if measurements are expected to be made once a minute for 100 minutes, but only 
+        99 measurements are recorded, the data availability is 99%."
+        units: "%"
+    
+    air_temp:
+      input:
+        name: Int Temp (�C)
+        units: degC
+      dims: [time]
+      type: float
+      attrs:
+        long_name: Air Temperature
+        description: "Air temperature measures how hot or cold the atmosphere is at the 
+        location of the sensor."
+        standard_name: air_temperature
+        units: degC
+        fail_range: [10, 50]
+
+#-----------------------------------------------------------------
+quality_management:
+
+  #---------------------------------------------------------------
+  manage_missing_coordinates:
+    checker:
+      classname: tsdat.qc.checkers.CheckMissing
+    handlers:
+      - classname: tsdat.qc.handlers.FailPipeline
+    variables:
+      - COORDS
+
+  manage_coordinate_monotonicity:
+    checker:
+      classname: tsdat.qc.checkers.CheckMonotonic
+    handlers:
+      - classname: tsdat.qc.handlers.FailPipeline
+    variables:
+      - COORDS
+
+  #---------------------------------------------------------------
+  manage_missing_values:
+    checker:
+      classname: tsdat.qc.checkers.CheckMissing
+    handlers:
+      - classname: tsdat.qc.handlers.RemoveFailedValues
+      - classname: tsdat.qc.handlers.RecordQualityResults
+        parameters:
+          bit: 1
+          assessment: Bad
+          meaning: "Value is equal to _FillValue or NaN"
+    variables:
+      - DATA_VARS
+
+  manage_fail_min:
+    checker:
+      classname: tsdat.qc.checkers.CheckFailMin
+    handlers:
+      - classname: tsdat.qc.handlers.RecordQualityResults
+        parameters:
+          bit: 2
+          assessment: Bad
+          meaning: "Value is less than fail_range"
+    variables:
+      - DATA_VARS
+
+  manage_fail_max:
+    checker:
+      classname: tsdat.qc.checkers.CheckFailMax
+    handlers:
+      - classname: tsdat.qc.handlers.RecordQualityResults
+        parameters:
+          bit: 3
+          assessment: Bad
+          meaning: "Value is greater than fail_range"
+    variables:
+      - DATA_VARS

@@ -1,0 +1,79 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Getting Started",
+  "steps": [
+    {
+      "directory": ".tours",
+      "description": "Welcome to `ingest-template-local`, a template repository for using [tsdat](https://github.com/tsdat/tsdat) on your local computer.\n\nThis Code Tour will provide an overview of the template repository and will show you how you can customize the template to meet your data needs.\n\nTo progress through this tutorial, simply press the `next` button below each message box."
+    },
+    {
+      "file": "README.md",
+      "description": "The README file describes important information for getting started with tsdat. We recommend reading this now if you haven't already. It will tell you how install `tsdat` and the dependencies for this template repository.",
+      "line": 1
+    },
+    {
+      "directory": "config",
+      "description": "We'll now look at the outline of the template repository. \n\nThe first thing we'll look at is the `config` directory (highlighted on the left). Go ahead and expand the directory in the navigation panel to show the three files listed there:\n\n- `pipeline_config.yml`\n- `storage_config_dev.yml`\n- `storage_config_prod.yml`\n\nThis directory contains the configuration files that describe how the pipeline handles data coming in and out of the example `tsdat` pipeline. Configuration files are the preferred way to customize `tsdat` data pipelines."
+    },
+    {
+      "file": "config/pipeline_config.yml",
+      "description": "The `pipeline_config.yml` file describes the translations applied to the input data that will convert it into the output dataset. It is made up of three main sections: `pipeline`, `dataset_definition`, and `quality_management`.",
+      "line": 1
+    },
+    {
+      "file": "config/pipeline_config.yml",
+      "description": "The `pipeline` section contains several parameters that will be used to construct filenames and directory locations of data produced by the pipeline. Of the parameters in this section currently, `qualifier` and `temporal` are both optional parameters. ",
+      "line": 2
+    },
+    {
+      "file": "config/pipeline_config.yml",
+      "description": "The `dataset_definition` section is based on the netCDF data format and represents the attributes (metadata), dimensions, and variables that will be output by this pipeline. Variables can either come directly from the input data (most common) or be calculated / created using some combination of input data variables. ",
+      "line": 10
+    },
+    {
+      "file": "config/pipeline_config.yml",
+      "description": "Note that `time` is always a required variable when using `tsdat` (Time Series DATa pipelines). The input raw data should have a time variable as well, though it does not need to be named \"time\".",
+      "line": 27
+    },
+    {
+      "file": "config/pipeline_config.yml",
+      "description": "The `quality_management` section is used to analyze the quality of the dataset and apply some action for problematic data points. \n\nAt a minimum, we recommend using this section to manage the quality of coordinate variables (e.g. `time`) to ensure that it is strictly monotonic (either always increasing or always decreasing) and does not have any missing values (e.g. -9999). \n\nIn the example config file there are also two additional quality managers which compare the `fail_range` variable attribute (currently only defined for the `air_temp` variable) to the variable data and records the quality results in an associated \"qc\" variable.",
+      "line": 102
+    },
+    {
+      "file": "config/storage_config_dev.yml",
+      "description": "The `storage_config_dev.yml` file and `storage_config_prod.yml` configuration files are used to determine how the `tsdat` pipeline should interact with the operating system / platform the code is running on. It is used to determine which `Storage` object to use (i.e. `tsdat.io.FileSystemStorage` or `tsdat.io.AwsStorage`) and what `FileHandler` objects to use to read the raw data and output data. \n\nTwo storage config files are provided so that one can be used to write to a development area and the other to a production area (i.e. where `root_dir` points to). This is optional behavior.",
+      "line": 1
+    },
+    {
+      "directory": "data/inputs",
+      "description": "The `data/inputs/` directory contains the input data that comes with this template repository. When developing your own pipeline, place your raw data here. If you use the default settings the output data will be created in a new directory: `storage/root/`. "
+    },
+    {
+      "directory": "pipeline",
+      "description": "The `pipeline/` directory contains several python files that can be used to customize and extend the behavior of tsdat pipelines beyond what the config files along can accomplish. "
+    },
+    {
+      "file": "pipeline/filehandlers.py",
+      "description": "`FileHandlers` are python classes that are used to translate between the internal `xarray.Dataset` object used by `tsdat` and whatever input/output data format is required to meet your particular data needs. \n\nA dummy `FileHandler` object is defined below to convert the `lidar.z06.00.20201201.000000.sta` raw data included in this example into an `xarray.Dataset` object. To register a `FileHandler` for use in your pipeline, consult the `config/storage_config_dev.yml` file. In this particular case, the `DummyFileHandler` is not actually registered, so it is not used in the template pipeline. Instead, the built-in `CsvHandler` is used with some parameters passed from the config file to read the `*.sta` input file.",
+      "line": 7
+    },
+    {
+      "file": "pipeline/pipeline.py",
+      "description": "The `Pipeline` class here extends the [tsdat IngestPipeline](https://tsdat.readthedocs.io/en/latest/autoapi/tsdat/pipeline/ingest_pipeline/index.html#tsdat.pipeline.ingest_pipeline.IngestPipeline) class to override some of the custom code hooks to implement custom behavior that could not be accomplished directly from the config files. In this case, the `hook_customize_dataset()` function consolidates several 1-D raw variables into 2-D variables and applies some corrections to data running at Morro Bay, and the `hook_generate_and_persist_plots()` function creates and stores several plots.",
+      "line": 18
+    },
+    {
+      "file": "pipeline/qc.py",
+      "description": "Quality Checks and Quality Controls can be defined in this file in the form of `QualityChecker` and `QualityHandler` objects. Similar to the `FileHandler` objects, these classes can be registered for use in the `quality_management` section of the `config/pipeline_config.yml` config file.",
+      "line": 7
+    },
+    {
+      "file": "run_pipeline.py",
+      "description": "This file is used as the main entry point to the local tsdat ingest pipeline. If you have already installed python 3.7+ and followed the installation instructions in the README file, then you can go ahead and run this script to produce output using the pre-configured settings for the provided input data.",
+      "line": 17
+    }
+  ],
+  "isPrimary": true,
+  "description": "Overview of the template for running tsdat locally."
+}

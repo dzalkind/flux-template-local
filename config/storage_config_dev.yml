@@ -1,0 +1,36 @@
+
+storage:
+
+  classname:  tsdat.io.FilesystemStorage     # Choose from FilesystemStorage or AwsStorage
+  parameters:
+    retain_input_files: True                 # Whether to keep input files after they are processed
+    root_dir: ${CONFIG_DIR}/../storage/root  # The root dir where processed files will be stored
+
+  # Declare the handlers that will be used to read input files and
+  # write output files.
+  file_handlers:
+    # Input handlers are used to read input files
+    input:
+      sta:
+        file_pattern: '.*\.sta'
+        classname: tsdat.io.filehandlers.CsvHandler
+        parameters:
+          read:
+            read_csv:
+              sep: "\t"
+              header: 41
+              index_col: False
+    
+    # You can create your own FileHandler to read custom file formats
+    # as shown below. 
+    #   sta:
+    #     file_pattern: '.*\.sta'
+    #     classname: pipeline.filehandlers.DummyFileHandler
+
+    # Output handlers are used to read/write output files
+    # The default output handler is NetCDF.
+    output:
+      netcdf:
+        file_extension: '.nc'
+        classname: tsdat.io.filehandlers.NetCdfHandler
+
