@@ -17,7 +17,7 @@ def run_pipeline(mode: str = 'prod', input_files: List[str] = []):
     data_dir = os.path.join(project_dir, 'data')
     config_dir = os.path.join(project_dir, 'config')
 
-    pipeline_config = os.path.join(config_dir, 'pipeline_config.yml')
+    pipeline_config = os.path.join(config_dir, 'flux_lowspeed_config.yml')
     storage_config_filename = f"storage_config_{mode}.yml"
     storage_config = os.path.join(config_dir, storage_config_filename)
 

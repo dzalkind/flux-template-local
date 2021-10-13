@@ -158,35 +158,23 @@ class Pipeline(IngestPipeline):
         with self.storage._tmp.get_temp_filepath(filename) as tmp_path:
 
             # Create the figure and axes objects
-            fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(14, 8), constrained_layout=True)
+            fig, ax = plt.subplots(nrows=4, ncols=1, figsize=(14, 8), constrained_layout=True)
             fig.suptitle(f"Wind Speed and Direction Time Series at {ds.attrs['location_meaning']} on {date}")
 
-            # Select heights to plot
-            heights = [3,7]
-
-            # Plot the wind speed
-            for i, height in enumerate(heights):
-                velocity = ds.wind_speed.sel(height=height)
-                velocity.plot(ax=ax[0], linewidth=2, c=wind_cmap(i / len(heights)), label=f"{height} m")
+            ds.WS_15m.plot(ax=ax[0], linewidth=2)
+            ds.Pressure.plot(ax=ax[1], linewidth=2)
+            ds.Temperature.plot(ax=ax[2], linewidth=2)
+            ds.RelativeHumidity.plot(ax=ax[3], linewidth=2)
 
             # Set the labels and ticks
-            format_time_xticks(ax[0])
-            ax[0].legend(facecolor="white", ncol=len(heights), bbox_to_anchor=(1, -0.05))
-            ax[0].set_title("")  # Remove bogus title created by xarray
-            ax[0].set_xlabel("Time (UTC)")
-            ax[0].set_ylabel(r"Wind Speed (ms$^{-1}$)")
 
-            # Plot the wind direction
-            for i, height in enumerate(heights):
-                direction = ds.wind_direction.sel(height=height)
-                direction.plot(ax=ax[1], linewidth=2, c=wind_cmap(i / len(heights)), label=f"{height} m")
+            [a.set_xticklabels('') for a in ax]
 
-            # Set the labels and ticks
-            format_time_xticks(ax[1])
-            ax[1].legend(facecolor="white", ncol=len(heights), bbox_to_anchor=(1, -0.05))
-            ax[1].set_title("")  # Remove bogus title created by xarray
-            ax[1].set_xlabel("Time (UTC)")
-            ax[1].set_ylabel(r"Wind Direction (deg. relative to U)")
+            format_time_xticks(ax[-1])
+
+
+            ax[-1].set_xlabel("Time (UTC)")
+
 
             # Save the figure
             fig.savefig(tmp_path, dpi=100)

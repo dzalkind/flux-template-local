@@ -12,7 +12,7 @@ storage:
     # Input handlers are used to read input files
     input:
       flux_sonic:
-        file_pattern: '.*CR1000X_21544_Cellular_Sonics_.*dat'
+        file_pattern: '.*CR1000X_21544_Cellular_.*dat'
         classname: tsdat.io.filehandlers.CsvHandler
         parameters:
           read:

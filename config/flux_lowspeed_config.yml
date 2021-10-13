@@ -1,0 +1,149 @@
+pipeline:
+  type: Ingest
+
+  location_id: nwtc
+  dataset_name: flux_z02
+  qualifier: flux
+  # temporal: 10min
+  data_level: a1
+
+dataset_definition:
+  attributes:
+    title: Example Ingest for awaken surface flux sonics
+    description: Example Ingest for awaken surface flux sonics
+    conventions: "ME Data Pipeline Standards: Version 1.0"
+    institution: National Renewable Energy Laboratory
+    code_url: https://github.com/tsdat/ingest-template-local
+    location_meaning: National Wind Technology Center
+
+  dimensions:
+    time:
+        length: unlimited
+    height:
+        length: 2
+
+  variables:
+
+    time:
+      input:
+        name: TIMESTAMP
+        converter:
+          classname: tsdat.utils.converters.StringTimeConverter
+          parameters:
+            timezone: UTC
+            time_format: "%Y-%m-%d %H:%M:%S"
+      dims: [time]
+      type: long
+      attrs:
+        long_name: Time (UTC)
+        standard_name: time
+        units: seconds since 1970-01-01T00:00:00
+
+    WS_15m:
+      dims: [time]
+      type: float
+      input:
+        name: WS_15m
+      attrs:
+        long_name: Wind Speed at 15 m
+        description: "Wind speed is the measurement of how fast wind is moving past a 
+        fixed location in the horizontal plane. The lidar wind profiler, which is 
+        mounted on the buoy hull, measures wind speed at heights between 40 m to 250 
+        meters above the sea surface by detecting the reflection of laser signals sent 
+        into the atmosphere."
+        standard_name: wind_speed
+        units: m/s
+
+    Pressure:
+      dims: [time]
+      type: float
+      input:
+        name: Pressure
+      attrs:
+        long_name: Atmospheric pressure
+        standard_name: pressure
+        units: hPa
+
+    Temperature:
+      dims: [time]
+      type: float
+      input:
+        name: Temperature
+      attrs:
+        long_name: Atmospheric pressure
+        standard_name: temperature
+        units: degC
+
+    RelativeHumidity:
+      dims: [time]
+      type: float
+      input:
+        name: RelativeHumidity
+      attrs:
+        long_name: Relative humitity
+        standard_name: temperature
+        units: '%'
+
+    Record:
+      dims: [time]
+      type: float
+      input:
+        name: RECORD
+
+#-----------------------------------------------------------------
+quality_management:
+
+  #---------------------------------------------------------------
+  manage_missing_coordinates:
+    checker:
+      classname: tsdat.qc.checkers.CheckMissing
+    handlers:
+      - classname: tsdat.qc.handlers.FailPipeline
+    variables:
+      - COORDS
+
+  manage_coordinate_monotonicity:
+    checker:
+      classname: tsdat.qc.checkers.CheckMonotonic
+    handlers:
+      - classname: tsdat.qc.handlers.FailPipeline
+    variables:
+      - COORDS
+
+  #---------------------------------------------------------------
+  manage_missing_values:
+    checker:
+      classname: tsdat.qc.checkers.CheckMissing
+    handlers:
+      - classname: tsdat.qc.handlers.RemoveFailedValues
+      - classname: tsdat.qc.handlers.RecordQualityResults
+        parameters:
+          bit: 1
+          assessment: Bad
+          meaning: "Value is equal to _FillValue or NaN"
+    variables:
+      - DATA_VARS
+
+  manage_fail_min:
+    checker:
+      classname: tsdat.qc.checkers.CheckFailMin
+    handlers:
+      - classname: tsdat.qc.handlers.RecordQualityResults
+        parameters:
+          bit: 2
+          assessment: Bad
+          meaning: "Value is less than fail_range"
+    variables:
+      - DATA_VARS
+
+  manage_fail_max:
+    checker:
+      classname: tsdat.qc.checkers.CheckFailMax
+    handlers:
+      - classname: tsdat.qc.handlers.RecordQualityResults
+        parameters:
+          bit: 3
+          assessment: Bad
+          meaning: "Value is greater than fail_range"
+    variables:
+      - DATA_VARS
