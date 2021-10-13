@@ -11,15 +11,15 @@ storage:
   file_handlers:
     # Input handlers are used to read input files
     input:
-      sta:
-        file_pattern: '.*\.sta'
+      flux_sonic:
+        file_pattern: '.*CR1000X_21544_Cellular_Sonics_.*dat'
         classname: tsdat.io.filehandlers.CsvHandler
         parameters:
           read:
             read_csv:
-              sep: "\t"
-              header: 41
+              header: 1
               index_col: False
+              skiprows: [2,3]
     
     # You can create your own FileHandler to read custom file formats
     # as shown below. 
