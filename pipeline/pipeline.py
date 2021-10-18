@@ -84,7 +84,8 @@ class Pipeline(IngestPipeline):
 
                 # wind speed and direction, relative to U direction
                 dataset['wind_speed'] = np.sqrt(dataset.U_ax**2 + dataset.V_ax**2)
-                dataset['wind_direction'] = np.degrees(np.arctan2(dataset.V_ax,dataset.U_ax))
+                direction_raw = np.degrees(np.arctan2(dataset.V_ax,dataset.U_ax))
+                dataset['wind_direction'] = (dataset.dims,np.where(direction_raw<0,direction_raw+360,direction_raw).T)
 
         return dataset
 
