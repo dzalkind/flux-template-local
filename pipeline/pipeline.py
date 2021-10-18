@@ -169,6 +169,7 @@ class Pipeline(IngestPipeline):
             # Set the labels and ticks
 
             [a.set_xticklabels('') for a in ax]
+            [a.set_ylabel(a.get_ylabel(), rotation = 45, labelpad = 50) for a in ax]
 
             format_time_xticks(ax[-1])
 

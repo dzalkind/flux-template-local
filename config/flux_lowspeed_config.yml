@@ -70,7 +70,7 @@ dataset_definition:
       input:
         name: Temperature
       attrs:
-        long_name: Atmospheric pressure
+        long_name: Atmospheric temperature
         standard_name: temperature
         units: degC
 
